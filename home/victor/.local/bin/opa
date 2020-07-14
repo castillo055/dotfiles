@@ -1,0 +1,4 @@
+#!/bin/bash
+
+TMP=$( du -a ~/dox/aero/ | cut -f2 | grep .pdf | dmenu -l 20 -i -p "OPEN PDF AERO » " ) ;
+[[ $? -eq 0 ]] && zathura $TMP &

@@ -1,0 +1,118 @@
+#!/bin/bash
+export DISPLAY=:0
+
+loc='za'
+archive="/home/victor/.local/share/weather-archive"
+tmpdir="/tmp/radar-fetch"
+
+[ -d $tmpdir ] || mkdir $tmpdir
+[ -d $archive ] || mkdir -p $archive
+[ -d $archive/radar/$loc ] || mkdir -p $archive/radar/$loc
+[ -d $archive/radar/comp ] || mkdir -p $archive/radar/comp
+[ -d $archive/sat/infra ] || mkdir -p $archive/sat/infra
+[ -d $archive/sat/airmass ] || mkdir -p $archive/sat/airmass
+[ -d $archive/sat/visible ] || mkdir -p $archive/sat/visible
+
+
+last=$(cd $archive/radar/$loc && du ./*.png | cut -f 2 | sort | tail -n1)
+
+if [ $last != "" ] ; then
+	# LAST ARCHIVE
+	year=$(echo $last | cut -c 3-6)
+	month=$(echo $last | cut -c 7-8)
+	day=$(echo $last | cut -c 9-10)
+	hour=$(echo $last | cut -c 11-12)
+	min=$(echo $last | cut -c 13-14)
+
+	startdate=$(date +"%Y-%m-%d %H:%M" -d"$year-$month-$day $hour:$min 10 min")
+	enddate=$(date +"%Y-%m-%d %H:%M" -d"now -130 min") # latest radar compositions are from 130min ago
+	
+	curr="$startdate"
+
+	okays=0
+	errors=0
+	cd $tmpdir
+	while true; do
+		timecode=$(date +%Y%m%d%H%M -d"$curr")
+		
+		wget -nv https://www.aemet.es/imagenes_d/eltiempo/observacion/radar/"$timecode"_r8$loc.gif
+		if [ "$?" -eq "0" ]; then
+			okays=$(( $okays + 1 ))
+			convert "$timecode"_r8$loc.gif $archive/radar/$loc/$timecode.png
+			rm $tmpdir/"$timecode"_r8$loc.gif
+		else
+			errors=$(( $errors + 1 ))
+		fi
+
+		[[ "$curr" < "$enddate" ]] || break
+		curr=$( date +"%Y-%m-%d %H:%M" --date "$curr 10 min" )
+	done
+	#notify-send -a "WEATHER RADAR" "[UPDATED] RADAR ARCHIVE [$loc]" "OK:$okays ERR:$errors"
+fi
+
+last=$(cd $archive/radar/comp && du ./*.png | cut -f 2 | sort | tail -n1)
+if [ $last != "" ]; then
+	# LAST ARCHIVE
+	year=$(echo $last | cut -c 3-6)
+	month=$(echo $last | cut -c 7-8)
+	day=$(echo $last | cut -c 9-10)
+	hour=$(echo $last | cut -c 11-12)
+	min=$(echo $last | cut -c 13-14)
+
+	startdate=$(date +"%Y-%m-%d %H:%M" -d"$year-$month-$day $hour:$min 30 min")
+	enddate=$(date +"%Y-%m-%d %H:%M" -d"now -130 min") # latest radar compositions are from 130min ago
+	
+	curr="$startdate"
+
+	okays=0
+	errors=0
+	cd $tmpdir
+	while true; do
+		timecode=$(date +%Y%m%d%H%M -d"$curr")
+		
+		wget -nv https://www.aemet.es/imagenes_d/eltiempo/observacion/radar/"$timecode"_r8pb.gif
+		if [ "$?" -eq "0" ]; then
+			okays=$(( $okays + 1 ))
+			convert "$timecode"_r8pb.gif $archive/radar/comp/$timecode.png
+			rm $tmpdir/"$timecode"_r8pb.gif
+		else
+			errors=$(( $errors + 1 ))
+		fi
+
+		[[ "$curr" < "$enddate" ]] || break
+		curr=$( date +"%Y-%m-%d %H:%M" --date "$curr 30 min" )
+	done
+	#notify-send -a "WEATHER RADAR" "[UPDATED] RADAR ARCHIVE [COMP]" "OK:$okays ERR:$errors"
+fi
+
+last=$(cd $archive/sat/infra && du ./*.png | cut -f 2 | sort | tail -n1)
+if [ $last != "" ]; then
+	# LAST ARCHIVE
+	year=$(echo $last | cut -c 3-6)
+	month=$(echo $last | cut -c 7-8)
+	day=$(echo $last | cut -c 9-10)
+	hour=$(echo $last | cut -c 11-12)
+	min=$(echo $last | cut -c 13-14)
+
+	startdate=$(date +"%Y-%m-%d %H:%M" -d"$year-$month-$day $hour:$min 60 min")
+	enddate=$(date +"%Y-%m-%d %H:%M" -d"now -120 min") # latest radar compositions are from 130min ago
+	
+	curr="$startdate"
+
+	cd $tmpdir
+	while true; do
+		[[ "$curr" < "$enddate" ]] || break
+		timecode=$(date +%Y%m%d%H%M -d"$curr")
+		
+		wget -nv https://www.aemet.es/imagenes_d/eltiempo/observacion/satelite/"$timecode"_s9{1g.jpg,2g.jpg,3g.gif}
+		mv "$timecode"_s91g.jpg $archive/sat/airmass/$timecode.jpg
+		mv "$timecode"_s92g.jpg $archive/sat/visible/$timecode.jpg
+		convert "$timecode"_s93g.gif $archive/sat/infra/$timecode.png
+		rm $tmpdir/"$timecode"_s93g.gif
+
+		curr=$( date +"%Y-%m-%d %H:%M" --date "$curr 60 min" )
+	done
+	#notify-send -a "WEATHER RADAR" "[UPDATED] RADAR ARCHIVE [SAT]"
+fi
+
+rmdir $tmpdir

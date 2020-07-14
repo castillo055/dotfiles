@@ -1,0 +1,5 @@
+# Restarts dwm when exited (keeps session opened)
+while true; do
+	dwm 2> ~/.cache/dwm.log
+	mv ~/.cache/dwm.log ~/.cache/dwm.log.old
+done

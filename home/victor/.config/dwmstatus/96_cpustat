@@ -1,0 +1,52 @@
+#!/bin/bash
+period=2
+
+hist_length=24
+
+# SET UP FILES
+tmpdir=/tmp/cpustat.dwmstatus
+[ -d $tmpdir ] || mkdir $tmpdir
+
+prev_total_file=$tmpdir/prev_total_file
+[ -f $prev_total_file ] || echo 0 > $prev_total_file
+prev_idle_file=$tmpdir/prev_idle_file
+[ -f $prev_idle_file ] || echo 0 > $prev_idle_file
+
+cpu_hist=$tmpdir/cpu_hist
+[ -f $cpu_hist ] || touch $cpu_hist
+
+# GET NEW PERCENTAGE
+prev_total=$(cat $prev_total_file)
+prev_idle=$(cat $prev_idle_file)
+
+new_data=$(cat /proc/stat | head -n1)
+new_idle=$(echo $new_data | cut -d ' ' -f5)
+
+total=0
+for i in $( seq 2 $(echo $new_data | wc -w)); do
+	total=$(( $total + $( echo $new_data | cut -d' ' -f$i ) ))
+done
+
+new_percent=$(echo "(1 - (($new_idle - $prev_idle)/($total - $prev_total)))*100" | bc -l | cut -d. -f1)
+
+# UPDATE FILES
+echo $new_idle > $prev_idle_file
+echo $total > $prev_total_file
+[ "$new_percent" == "" ] || echo $new_percent >> $cpu_hist
+
+mv $cpu_hist $cpu_hist"_tmp"
+tail -n$hist_length $cpu_hist"_tmp" > $cpu_hist
+
+# GENERATE GRAPH
+mapfile -t hist < $cpu_hist
+
+graph='' #^f5^'
+for i in $(seq 0 $(($hist_length-1)) ); do
+	h=$(echo "${hist[$i]}*0.01*34" | bc -l 2> /dev/null | cut -d. -f1)
+	[ "$h" == "" ] && h=0
+	graph=$graph"^r$((17 - ($h / 2) + ( 24-$i ) / 4 )),$((24-$i)),$h,1^" #"^r$i,$((24-$h)),1,2^"
+done
+graph=$graph"^f30^" #"^f$(($hist_length + 3))^"
+
+# ECHO OUTPUT
+echo $graph$new_percent%' '

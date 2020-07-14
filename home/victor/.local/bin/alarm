@@ -1,0 +1,13 @@
+#!/bin/bash
+export DISPLAY=:0
+
+TEXT=${1:-"ALARM"}
+
+dwmdo view9
+dwmdo REDtheme &
+
+#st -f "Iosevka:pixelsize=200" -g$((${#TEXT} + 1))x3+0+0 -e sh -c "tput civis; echo -en '\e[1m\e[5m\e[31m$TEXT' ; dwmdo togglefloating ; dwmdo togglelayout ; while true ; do sleep 1 ; done"
+#st -i -f "Iosevka:pixelsize=200" -g$((${#TEXT} + 1))x3+0+0 -e sh -c "tput civis; echo -en '\e[1m\e[5m\e[31m$TEXT' ; while true ; do sleep 1 ; done"
+st -c scratch -f "Iosevka:pixelsize=200" -g$((${#TEXT} + 1))x3+0+0 -e sh -c "tput civis; echo -en '\e[1m\e[5m\e[31m$TEXT' ; while true ; do sleep 1 ; done"
+
+dwmdo NORMtheme

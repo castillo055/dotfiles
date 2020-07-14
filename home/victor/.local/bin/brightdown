@@ -1,0 +1,9 @@
+#!/bin/sh
+
+CACHE_DIR='/tmp/statusbar'
+
+xbacklight -dec 5
+#refbar
+
+bash /home/victor/.config/dwmstatus/90_brightness > $CACHE_DIR/90_brightness-tmp
+mv $CACHE_DIR/90_brightness-tmp $CACHE_DIR/90_brightness

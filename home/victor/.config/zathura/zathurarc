@@ -1,0 +1,12 @@
+set selection-clipboard clipboard       
+
+set default-bg rgb(0,0,0,0)
+set default-fg rgb(0,0,0,0)
+
+set render-loading-bg "#06060A"
+set render-loading-fg "#FCAE1E"
+
+set zoom-min 1
+set zoom-step 5
+
+set recolor true

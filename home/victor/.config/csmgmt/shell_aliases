@@ -1,0 +1,28 @@
+alias ls='ls --color=auto'
+alias ll='ls -lsah --color=auto'
+alias l='ls --color=auto'
+alias bc='bc -q'
+
+alias cdr='cd ~/repos'
+alias cds='cd ~/.sources'
+alias cdb='cd ~/.local/bin'
+alias cdc='cd ~/.config'
+
+#alias v='vim'
+alias v='nvim'
+alias r='ranger'
+
+#opa() {
+#	TMP=$( du -a ~/dox/aero/ | cut -f2 | grep .pdf | fzf --prompt="OPEN PDF AERO » " ) ;
+#	[[ $? -eq 0 ]] && zathura $TMP & ;
+#}
+
+se() { TMP=$( du -a ~/.local/bin/ | cut -f2 | cut -d'/' -f 6 | sort | fzf --prompt="EDIT » " ) ; [[ $? -eq 0 ]] && $EDITOR $TMP ;}
+
+ns() { SCRIPT="$1" ; [[ $SCRIPT == "" ]] || { [[ -f ~/.local/bin/$SCRIPT ]] || { echo "#!/bin/bash" > ~/.local/bin/$SCRIPT && chmod +x ~/.local/bin/$SCRIPT && v ~/.local/bin/$SCRIPT } } ;}
+
+pac() { TMP=$( pacman -Ss | awk 'NR%2{printf "%s¬",$0;next;}1' | sed 's/   //' | column -s'¬' -t -E1 | fzf ) ; [[ $? -eq 0 ]] && TMP=$( echo $TMP | cut -d ' ' -f1 | cut -d '/' -f2 ) && pacman -Si $TMP && sudo pacman -S $TMP ;}
+
+ya() { TMP=$( yay -Sl aur | cut -c 5- | sed 's/ unknown-version//;s/ \[Ins/¬[Ins/' | column -s'¬' -t | fzf ) ; [[ $? -eq 0 ]] && TMP=$( echo $TMP | cut -d ' ' -f1 | cut -d '/' -f2 ) && yay -Si $TMP && yay -S $TMP ;}
+
+checkpass() { curl -s https://api.pwnedpasswords.com/range/$( echo -n $1 | sha1sum | tr '[a-z]' '[A-Z]' | cut -c -5 ) | grep $( echo -n $1 | sha1sum | tr '[a-z]' '[A-Z]' | cut -c 6- ) ;}

@@ -1,0 +1,7 @@
+#!/bin/sh
+period=1
+
+MEM=$( free | grep Mem: | awk '{print int(100*($3+$5)/$2);}' )
+
+[[ $MEM -gt 90 ]] && FORMAT='^b#ff0000^^c#06060a^'
+echo -e $FORMAT' \uf2db' $MEM%' '^d^

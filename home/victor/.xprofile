@@ -1,0 +1,17 @@
+PATH=$PATH:/home/victor/.local/bin
+
+xrdb /home/victor/.Xresources			# loads xresources
+
+/home/victor/.local/bin/setbg &			# sets wallpaper (script loc: ~/.local/bin/setbg)
+#/home/victor/.local/bin/dwmstatus &		# starts status bar
+/home/victor/repos/local/castat/castat &	# starts status bar
+/home/victor/.local/utils/usb-notify &		# starts usb-notify (detects when new usb is inserted)
+
+#xcompmgr &		# xcompmgr for transparency
+picom --experimental-backends --backend glx -b
+dunst &			# dunst for notifications
+mpd &			# mpd for music player daemon
+
+xset r rate 200 30	# set typematic delay and rate (for when ya hold down ye keys)
+
+exec /home/victor/.local/bin/startdwm

@@ -1,0 +1,3 @@
+#!/bin/bash
+period=900
+cat /home/victor/.cache/covid_data

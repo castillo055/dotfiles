@@ -1,0 +1,30 @@
+#!/bin/bash
+
+tmpfile="/tmp/alm-crontab-tmp_$(date +%y%m%d-%H%M)"
+crontab -l > $tmpfile
+
+list() {\
+	grep -A2 ALARM $tmpfile # | grep -v ALARM
+}
+
+add() {\
+	count="$( grep ALARM $tmpfile | wc -l )"
+	
+	echo "# ALARMA $count" >> $tmpfile
+	echo $1 /home/victor/.local/bin/alarm \"$2\" | tr "'" '*' >> $tmpfile
+
+	crontab $tmpfile
+	list
+
+}
+
+case $1 in
+	"list")
+		list ;;
+	"add")
+		add "$2" "$3" ;;
+	*)
+		;;
+esac
+
+rm $tmpfile

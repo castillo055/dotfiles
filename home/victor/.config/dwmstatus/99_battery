@@ -1,0 +1,11 @@
+#!/bin/sh
+period=1
+
+GLYPH='^f2^\uf1e6 '
+ONLINE=$( cat /sys/class/power_supply/ADP1/online )
+BAT=$( cat /sys/class/power_supply/BAT0/capacity )
+[[ $ONLINE -eq 0 ]] && GLYPH='\uf241 ' && [[ $BAT -le 10 ]] && FORMAT='^b#fcae1e^^c#06060a^'
+
+
+
+echo -e $FORMAT' '$GLYPH $BAT'% ^d^'

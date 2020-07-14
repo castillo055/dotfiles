@@ -1,0 +1,116 @@
+#!/bin/bash
+
+checkIfValidNode() {\
+	if [ ! -d ./.cgit ]; then
+		echo "[ERROR] Not a valid CGit node"
+		exit 3
+	fi
+}
+
+printdiff() {\
+	checkIfValidNode
+	for file in $( cat ./.cgit/files ) ; do
+		git diff --stat "$(head -n 1 ./.cgit/remotes)/$file" "$file"
+	done
+}
+
+printstatus() {\
+	printdiff
+}
+
+init() { \
+	if [ -d ./.cgit ] || [ -d ./.cgit-archive ]
+	then
+		echo "[ERROR] Repository already exists"
+		exit 1
+	fi
+
+	if [ "$1" == "archive" ]; then
+		mkdir ./.cgit-archive
+		touch ./.cgit-archive/nodes
+	else
+		if [ -d "$1" ] && [ -d "$1/.cgit-archive" ]
+		then
+			abspath="$( realpath $1 )"
+			mkdir ./.cgit
+			echo "$PWD" >> "$abspath/.cgit-archive/nodes" 
+			mkdir -p "$abspath$PWD" #$( echo $PWD | sed 's./.%.g' )"
+			echo "$abspath$PWD" >> ./.cgit/remotes #$( echo $PWD | sed 's./.%.g' )" >> ./.cgit/remotes
+			touch ./.cgit/files
+		else
+			echo "[ERROR] Not a valid CGit archive" ; exit 2
+		fi
+	fi
+}
+
+add() {\
+	checkIfValidNode
+	grep "$1" ./.cgit/files
+	[ "$?" -eq 1 ] && echo "$1" >> ./.cgit/files || echo "[NO EFFECT] File already added to CGit repo"
+}
+
+remove() {\
+	checkIfValidNode
+	grep "$1" ./.cgit/files
+	[ "$?" -eq 0 ] && sed -i "/$1/d" ./.cgit/files || echo "[NO EFFECT] File not added to CGit repo"
+}
+
+push() {\
+	checkIfValidNode
+	printstatus
+	echo "Push to CGit archive? [Y/n] "
+	read ans
+	if [ "$ans" == "Y" ] || [ "$ans" == "y" ] || [ "$ans" == "" ] ; then
+		if [ "$1" == "" ]; then
+			for file in $( cat ./.cgit/files ); do
+				cp "$file" "$(head -n 1 ./.cgit/remotes)/$file"
+				echo -e "\tPushed $file"
+			done
+		else
+			grep "$1" ./.cgit/files
+			[ "$?" -eq 0 ] && cp "$1" "$(head -n 1 ./.cgit/remotes)/$1" \
+				|| ( echo "[ERROR] File not in CGit repo. Add with 'cgit add <file>'" ; exit 3 )
+		fi
+		exit 0
+	elif [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
+		echo "[NO EFFECT] Nothing pushed"
+		exit 0
+	fi
+	echo "[ERROR] Not a valid answer"
+	push "$1"
+}
+
+pull() {\
+	checkIfValidNode
+	printstatus
+	echo "Pull from CGit archive? [Y/n] "
+	read ans
+	if [ "$ans" == "Y" ] || [ "$ans" == "y" ] || [ "$ans" == "" ] ; then
+		if [ "$1" == "" ]; then
+			for file in $( cat ./.cgit/files ); do
+				cp "$(head -n 1 ./.cgit/remotes)/$file" "$file"
+				echo -e "\tPulled $file"
+			done
+		else
+			grep "$1" ./.cgit/files
+			[ "$?" -eq 0 ] && cp "$(head -n 1 ./.cgit/remotes)/$1" "$1" \
+				|| ( echo "[ERROR] File not in CGit repo. Add with 'cgit add <file>'" ; exit 3 )
+		fi
+		exit 0
+	elif [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
+		echo "[NO EFFECT] Nothing pulled"
+		exit 0
+	fi
+	echo "[ERROR] Not a valid answer"
+	pull "$1"
+}
+
+case "$1" in
+	"init") 	init "$2" 	;;
+	"status") 	printstatus 	;;
+	"add") 		add "$2" 	;;
+	"remove") 	remove "$2" 	;;
+	"push") 	push "$2" 	;;
+	"pull") 	pull "$2" 	;;
+	"diff") 	printdiff "$2" 	;;
+esac

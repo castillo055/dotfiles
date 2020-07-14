@@ -1,0 +1,18 @@
+#!/bin/sh
+
+CMD=$( echo -e "> SINGLE\n> CLONED\n> EXTENDED" | dmenu -i -p "DISPLAY MGR" -nf "#3333cc" -sb "#3333cc" -fn "Iosevka:style=Bold" )
+
+case $CMD in
+        "> SINGLE" )
+                xrandr --output eDP-1 --primary --auto --output HDMI-1 --off ;
+                xrandr --output eDP-1-1 --primary --auto --output HDMI-1-1 --off ;
+		notify-send "SINGLE MODE                       [ 1 ]" ;;
+        "> CLONED" )
+                xrandr --output eDP-1 --primary --auto --output HDMI-1 --auto --pos 0x0 ;
+                xrandr --output eDP-1-1 --primary --auto --output HDMI-1-1 --auto --pos 0x0 ;
+		notify-send "CLONED MODE                     [[ 1 ]]" ;;
+        "> EXTENDED" )
+                xrandr --output eDP-1 --primary --auto --output HDMI-1 --auto --right-of eDP-1 ;
+                xrandr --output eDP-1-1 --primary --auto --output HDMI-1-1 --auto --right-of eDP-1-1 ;
+		notify-send "EXTENDED MODE                [ 1 ][ 2 ]" ;;
+esac

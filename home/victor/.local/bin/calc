@@ -1,0 +1,5 @@
+#!/bin/bash
+export BC_ENV_ARGS=/home/victor/.config/bc/bc.env       # Sets env vars for bc calculator
+#dwmdo setlayout-float && st -e sh -c "echo '──────────────────────────────────'CALCULATOR'─────────────────────────────────' && dwmdo togglefloating && dwmdo togglelayout && bc -ql"
+#st -i -e sh -c "echo '──────────────────────────────────'CALCULATOR'─────────────────────────────────' && bc -ql"
+st -c scratch -e sh -c "echo '──────────────────────────────────'CALCULATOR'─────────────────────────────────' && bc -ql"

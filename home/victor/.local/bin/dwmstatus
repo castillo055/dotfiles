@@ -1,0 +1,30 @@
+#!/bin/sh
+MODULES_DIR="/home/victor/.config/dwmstatus"
+
+#delim=' \uf0d9|\uf0da '
+delim='|'
+
+
+
+
+status() { \
+	for file in $( ls $MODULES_DIR); do
+		bash $MODULES_DIR/$file
+		echo -e $delim
+	done	
+
+	date +%H:%M
+}
+
+
+TEXT_PREV=""
+
+while :; do
+	TEXT="$( statusbar | sed ':a;N;$!ba;s/\n//g' )"
+	if [ "$TEXT" != "$TEXT_PREV" ]; then
+		xsetroot -name "$TEXT" # ^r0,0,1,22^^f1^ $( echo $TEXT | wc -m ) " # <-- DEBUG: This shows the ammount of chars in the string. CAN'T ever go above the defined buffer size in dwm.c
+		TEXT_PREV=$TEXT
+	fi
+
+	sleep 0.2 > /dev/null
+done

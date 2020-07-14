@@ -1,0 +1,14 @@
+#!/bin/bash
+period=1200
+
+PAC_UPDATE="$(pacman -Qu | wc -l)"
+YAY_UPDATE="$(yay -Qua | wc -l)"
+#wait
+
+SVSEG="/home/victor/.local/lib/dwmstatus/seven-seg"
+PAC="$( $SVSEG $PAC_UPDATE 4 0 2 )"
+YAY="$( $SVSEG $YAY_UPDATE 4 -$(( 6 * ${#PAC_UPDATE} )) 13 )"
+
+LABELS="^l0,2,0,11^^a-2,2,5,5,-90,180^^r7,4,2,2^^r7,8,2,2^^l0,21,2,13^^l2,13,4,22^^r7,15,2,2^^r7,19,2,2^"
+
+echo ' '$LABELS'^f15^'$PAC$YAY

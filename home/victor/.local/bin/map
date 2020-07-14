@@ -1,0 +1,9 @@
+#!/bin/bash
+
+COORDS=$( whereami -r | grep ude | awk '{printf "%f ", $2}' | cut -d' ' -f1,2 )
+LAT=${1:-$(echo $COORDS | cut -d' ' -f1)}
+LON=${2:-$(echo $COORDS | cut -d' ' -f2)}
+
+ZOOM=${3:-5}
+
+st node /home/victor/.sources/mapscii/main.js $LAT $LON $ZOOM &

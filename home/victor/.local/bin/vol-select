@@ -1,0 +1,17 @@
+#!/bin/bash
+
+select-vol() {
+for i in `seq 0 2 100`; do 
+	echo $i
+done | dmenu -fn "Iosevka Term:size=10" -b &
+
+sleep 0.1
+i=0
+vol=$( pulsemixer --get-volume | cut -d' ' -f1 )
+while [ $i -lt $[$vol / 2] ] ; do
+	xdotool key --delay 2 Right
+	i=$[$i + 1]
+done
+}
+
+casys set $(select-vol)

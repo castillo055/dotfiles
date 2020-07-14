@@ -1,0 +1,3 @@
+#!/bin/bash
+echo $1 > /home/victor/.local/utils/dwm.fifo
+sleep 0.1

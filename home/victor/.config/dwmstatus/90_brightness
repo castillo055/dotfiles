@@ -1,0 +1,29 @@
+#!/bin/dash
+period=60
+tmpdir="/tmp/brightness.dwmstatus"
+BRIGHT="$(( $( cat /sys/class/backlight/intel_backlight/brightness )00 / 852 ))"
+
+env printf " \uf0a3 $BRIGHT "
+
+[ -d $tmpdir ] || mkdir $tmpdir
+if [ -f $tmpdir/prev ]; then
+	PREV="$(cat $tmpdir/prev)"
+	[ -f $tmpdir/animation ] || echo "-20" > $tmpdir/animation
+	if [ "$BRIGHT" != "$PREV" ]; then
+		echo "-20" > $tmpdir/animation
+		echo $BRIGHT > $tmpdir/prev
+	fi
+
+	ANIM="$(cat $tmpdir/animation)"
+	WIDTH="4"
+	if [ $ANIM -lt 22 ]; then
+		[ $ANIM -gt 0 ] && WIDTH="$(($WIDTH - $ANIM))"
+
+		INDIC="$((-195+($BRIGHT*145/100)))"
+		echo "^c#06060a^^r-200,$WIDTH,165,18^^c#fcae1e^^r-190,$(($WIDTH+8)),145,2^^A$INDIC,$(($WIDTH+4)),9,9,0,360^^d^"
+		echo $(($ANIM + 2)) > $tmpdir/animation
+	fi
+else
+	echo $BRIGHT > $tmpdir/prev
+fi
+

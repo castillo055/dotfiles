@@ -1,0 +1,34 @@
+#!/bin/sh
+MODULES_DIR="/home/victor/.config/dwmstatus/"
+#CACHE_DIR="/home/victor/.cache/statusbar/"
+CACHE_DIR="/tmp/statusbar/"
+[[ -d $CACHE_DIR ]] || mkdir $CACHE_DIR
+
+#delim=' \uf0d9|\uf0da '
+#delim='^c#454b66^^r0,0,2,23^^d^^f5^'
+delim='^f4^^r0,0,1,26^^f4^'
+#delim='|'
+tmpsuf='_tmp'
+
+# Update cache if necessary. Does it concurrently
+for file in $( ls $MODULES_DIR); do
+	if [ -f $CACHE_DIR$file ]; then
+		elapsed=$(( $( date +%s ) - $( date +%s -r $CACHE_DIR$file ) ))
+		if [ $elapsed -ge $( grep 'period' $MODULES_DIR$file | cut -c 8- ) ]; then
+			bash -c "$MODULES_DIR$file > $CACHE_DIR$file" &
+		fi
+	else
+		bash $MODULES_DIR$file > $CACHE_DIR$file &
+	fi
+done	
+
+wait # Wait for all modules to update
+
+# Cat cache into statusbar
+for file in $( ls $MODULES_DIR); do
+	cat $CACHE_DIR$file
+	echo $delim
+done
+
+echo ' '
+date +%H:%M

@@ -1,0 +1,39 @@
+#!/bin/bash
+period=1
+
+WIDTH=35
+
+CARROUSEL_STATUS_FILE="/tmp/mpd-carrousel"
+carrousel_status=0
+#full_title=$( mpc -f %title% | head -n1 )
+full_title=$( mpc | head -n1 )
+[[ -f $CARROUSEL_STATUS_FILE ]] && carrousel_status=$(( $( cat $CARROUSEL_STATUS_FILE ) + 1 ))
+[[ $carrousel_status -gt $((${#full_title} - $WIDTH)) ]] && carrousel_status=1
+echo $carrousel_status > $CARROUSEL_STATUS_FILE
+
+mpcs=$( mpc )
+
+title=$( echo $full_title | tr ' ' '-' | tr [a-z] [A-Z] | cut -c $carrousel_status-$(( $carrousel_status + $WIDTH )) )
+sttus=$( echo "$mpcs" | tail -n2 | head -n1 | cut -d '[' -f2 | cut -d ']' -f1 )
+flags=$( echo $mpcs | cut -d ':' -f5,6,7,8,9 | sed 's/[a-z]*://g' )
+# sttus -> [playing/paused/stopped]
+# flags -> volume repeat random single consume
+
+PLAY_SYMBOL="\uf04d"
+case "$sttus" in
+	"paused")
+		PLAY_SYMBOL="\uf04b" ;;
+	"playing")
+		PLAY_SYMBOL="\uf04c" ;;
+	*)	title='';;
+esac > /dev/null
+
+REPEAT='\uf2d1'
+[[ "$( echo $flags | cut -d ' ' -f2 )" == "on" ]] && REPEAT="\uf01e"
+
+SHUFFLE='\uf2d1'
+[[ "$( echo $flags | cut -d ' ' -f3 )" == "on" ]] && SHUFFLE="\uf074"
+
+[[ $title == '' ]] && title="========« MUSIC »========"
+
+echo -e ' '$PLAY_SYMBOL » $title $REPEAT $SHUFFLE' '

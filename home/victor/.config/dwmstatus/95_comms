@@ -1,0 +1,47 @@
+#!/bin/sh
+period=3
+
+SEVSEG='/home/victor/.local/lib/dwmstatus/seven-seg'
+
+WIFI_GRAPH='^a0,2,16,16,50,80^^a2,5,12,12,55,70^^a7,8,2,2,0,360^'
+BLUE_GRAPH='^l8,13,8,22^^l9,13,12,16^^l11,15,9,17^^l9,17,12,20^^l11,19,9,21^^l8,17,5,20^^l8,17,5,15^'
+
+# CHECK IF CONNECTED TO THE INTERNET
+ping -n -c 1 -W 0.1 8.8.8.8 &> /dev/null
+if [ $? -eq 0 ]; then
+	WIFI_STAT='^c#00bb00^^r0,3,5,6^^d^'
+else
+	WIFI_STAT='^c#ff0000^^r0,3,5,6^^d^'
+fi
+
+# UPDATES TRAFFIC THROUGHPUT
+netlog='/home/victor/.cache/netlog'
+[ -f $netlog ] || touch $netlog
+
+prevdata=$( cat $netlog )
+rxcur=$( cat /sys/class/net/wlp2s0/statistics/rx_bytes )
+txcur=$( cat /sys/class/net/wlp2s0/statistics/tx_bytes )
+
+delta_rx=$(( (rxcur-${prevdata%% *}) / 1024 ))
+delta_tx=$(( (txcur-${prevdata##* }) / 1024 ))
+
+rx="^l0,3,3,6^^l3,5,6,2^^l0,4,3,7^^l3,6,6,3^^f$(( 28 - (4 * ${#delta_rx} )))^$( $SEVSEG $delta_rx 3 0 2 )^f2^"
+tx="^l0,5,3,2^^l3,3,6,6^^l0,6,3,3^^l3,4,6,7^^f$(( 28 - (4 * ${#delta_tx} )))^$( $SEVSEG $delta_tx 3 0 2 )^f2^"
+KiB="^c#c07202^^r0,2,1,7^^l1,5,4,1^^l2,5,3,9^^r6,3,1,1^^r6,5,1,4^^r9,1,1,8^^a6,1,6,3,-90,180^^a6,5,6,3,-90,180^^f15^^d^"
+WIFI_RXTX="$rx$KiB^f4^$tx$KiB"
+echo "$rxcur $txcur" > "$netlog"
+
+# 
+blue_data=$( timeout 0.1 bluetoothctl show )
+if [ $? -eq 124 ]; then
+	BLUE_STAT='^c#06060a^^r0,14,20,6^^d^'
+else
+	power=$( echo $blue_data | cut -d ' ' -f 11 )
+	if [ $power == "yes" ]; then
+		BLUE_STAT='^c#00bb00^^r0,14,5,6^^d^'
+	else
+		BLUE_STAT='^c#aa0000^^r0,14,5,6^^d^'
+	fi
+fi
+
+echo '^f2^'$WIFI_GRAPH$BLUE_GRAPH'^f18^'$WIFI_STAT$BLUE_STAT'^f10^'$WIFI_RXTX'^f3^'

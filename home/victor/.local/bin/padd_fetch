@@ -1,0 +1,13 @@
+#!/bin/bash
+
+CACHE_DIR='/home/victor/.cache/padd_fetch'
+[[ -d $CACHE_DIR ]] || mkdir $CACHE_DIR
+
+echo 1 > $CACHE_DIR/pinging_status
+BAT=$( timeout 50 ssh padd su -c cat /sys/class/power_supply/battery/capacity )
+[[ $? -eq 124 ]] && echo 2 > $CACHE_DIR/pinging_status && exit 1
+echo 0 > $CACHE_DIR/pinging_status 
+
+BAT_PERCENT=$( echo $BAT'*0.01' | bc )
+
+echo $BAT_PERCENT > $CACHE_DIR/battery

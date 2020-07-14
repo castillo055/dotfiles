@@ -1,0 +1,35 @@
+#!/bin/sh
+
+# -0-
+#1   2
+# =3=
+#4   5
+# -6- 7
+
+digit=$1
+size=$2
+xoff=$3
+yoff=$4
+
+seg0='^r'$xoff','$yoff','$size',1^'
+seg1='^r'$xoff','$yoff',1,'$size'^'
+seg2='^r'$(echo $xoff"+"$size"-1" | bc)','$yoff',1,'$size'^'
+seg3='^r'$xoff','$(echo $yoff"+"$size | bc)','$size',1^'
+seg4='^r'$xoff','$(echo $yoff"+"$size | bc)',1,'$size'^'
+seg5='^r'$(echo $xoff"+"$size"-1" | bc)','$(echo $yoff"+"$size | bc)',1,'$size'^'
+seg6='^r'$xoff','$(echo $yoff"+2*"$size | bc)','$size',1^'
+
+seg7='^r'$(echo $xoff+$size | bc)','$yoff',1,'$size'^'
+
+case $digit in
+	1) echo $seg2$seg5;;
+	2) echo $seg0$seg2$seg3$seg4$seg6;;
+	3) echo $seg0$seg2$seg3$seg5$seg6;;
+	4) echo $seg1$seg2$seg3$seg5;;
+	5) echo $seg0$seg1$seg3$seg5$seg6;;
+	6) echo $seg0$seg1$seg3$seg5$seg6$seg4;;
+	7) echo $seg0$seg2$seg5;;
+	8) echo $seg0$seg1$seg3$seg5$seg6$seg4$seg2;;
+	9) echo $seg0$seg1$seg3$seg5$seg6$seg2;;
+	0) echo $seg0$seg1$seg5$seg6$seg4$seg2;;
+esac

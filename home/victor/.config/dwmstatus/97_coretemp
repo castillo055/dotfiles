@@ -1,0 +1,6 @@
+#!/bin/sh
+period=2
+temp=$( sensors coretemp-isa-0000 | grep id | cut -d ' ' -f 5 | cut -c 2-3 )
+let height=$temp/6
+graph='^r2,'$(( 20 - $height))',2,'$height'^^f10^' 
+echo -e $graph'\uf2c8' $temp'°C '

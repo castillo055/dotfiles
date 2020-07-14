@@ -1,0 +1,14 @@
+#!/bin/bash
+
+CMD=$( echo -e "> RELOAD DWM\n> LOG OUT\n> REBOOT\n> SHUTDOWN" | dmenu -p "EXIT MGR" -nf "#aa0000" -sb "#bb0000" -i -fn "Iosevka:style=Bold" )
+
+case $CMD in
+	"> RELOAD DWM" )
+		dwmdo quit ;;
+	"> LOG OUT" )
+		killall Xsession ;;
+	"> REBOOT" )
+		reboot ;;
+	"> SHUTDOWN" )
+		shutdown now ;;
+esac

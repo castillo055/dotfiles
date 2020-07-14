@@ -1,0 +1,27 @@
+{
+	"languageserver": {
+		"ccls": {
+			"command": "ccls",
+			"filetypes": ["c", "cc", "c++", "cpp", "cuda", "objc", "objcpp", "ino"],
+			"rootPatterns": [".ccls", "compile_commands.json", ".git/"],
+			"initializationOptions": {
+				"cache": {
+					"directory": "/tmp/ccls"
+				},
+				"client": {
+					"snippetSupport": true
+				}
+			}
+		},
+
+		"bash": {
+			"command": "bash-language-server",
+			"args": ["start"],
+			"filetypes": ["sh"],
+			"ignoredRootPaths": ["~"]
+		}
+	},
+	
+
+	"suggest.floatEnable": true
+}

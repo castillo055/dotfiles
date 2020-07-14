@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cd /home/victor/.sources/pacwall
+
+#./pacwall.sh -b black -s "#fcae1edd" -r 3 -i -x 20 -z 10
+
+convert pacwall.png -resize 1570x1020 pacwall.png
+
+/home/victor/.sources/pscircle/build/template2
+
+convert out.png -resize 1470x920 out.png
+#convert -size 1920x1080 -composite pacwall.png out.png -geometry +550+50 -depth 8 fullbg.png
+convert -page +0+0 /home/victor/pics/black-bg.png -page +100+30 pacwall.png -page +900+125 out.png -background black -layers merge +repage fullbg.png
+
+mv fullbg.png /home/victor/.config/wall.png
+
+setbg

@@ -1,0 +1,55 @@
+#!/bin/bash
+
+mount-with-ids(){
+	BUS=$( echo $1 | cut -d ':' -f 1 )
+	DEV=$( echo $1 | cut -d ':' -f 2 )
+	
+	FOUND=false
+	USB_Serial=""
+	
+	# Search for the serial number of the PenDrive:
+	while read line
+	do
+	  	if [ $FOUND == true ]; then
+	    		USB_Serial=`echo "$line" | grep -Po 'SerialNumber=\K.*'`
+			    if [ "$USB_Serial" != "" ]; then
+				      break;
+			    fi
+		  fi
+	
+	  	if [ "`echo "$line" | grep -e "Vendor=0*$BUS.*ProdID= *$DEV"`" != "" ]; then
+			    FOUND=true
+		  fi
+	done <<< "$(usb-devices)"
+	
+	# Get the base name of the block device, e.g.: "sdx"
+	BASENAME=`file /dev/disk/by-id/* | grep -v 'part' | grep -Po "$USB_Serial.*/\K[^/]+$"`
+	
+	# Build the full address, e.g.: "/dev/sdx"
+	NAME="/dev/$BASENAME"
+	
+	# Output the address:
+	#echo $NAME
+	mount $NAME"1"
+}
+
+handle() {
+	type=$( lsusb -d $1 -v | tr '\n' ' ' | sed 's/.*InterfaceClass//' | awk '{print $1}')
+	[[ $type -eq 8 ]] && OPTION=$( echo -e "MOUNT\nMOUNT AND OPEN\nIGNORE" | dmenu -l 5 ) && case $OPTION in
+		"MOUNT")
+			mount-with-ids $1;;
+		"MOUNT AND OPEN")
+			mount-with-ids $1
+			sh -c 'cd /media/usb ; st' &
+			;;
+		*);;
+	esac
+}
+
+while :; do
+	prev=$( lsusb )
+	sleep 0.5
+	new=$( lsusb )
+	ids=$( wdiff -31 <(echo $prev) <(echo $new) | grep -vx '=*' | grep -E '[0-9a-fA-F]+:[0-9a-fA-F]+' -o )
+	[[ $? -eq 0 ]] && handle $ids
+done

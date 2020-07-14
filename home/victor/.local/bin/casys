@@ -1,0 +1,49 @@
+#!/bin/dash
+# Castle's Audio System
+
+#while getopts ":h" opt; do
+#	case ${opt} in
+#		h )
+#			echo "Castle's Audio System	- v0.2"
+#			echo ""
+#			echo "Usage:"
+#			echo "	set [NUM]			Set volume to provided value (by default it is set to 5; it's a feature, not a bug)"	
+#			echo "	up [NUM]			Increase volume by 5% (or NUMBER if provided)."
+#			echo "	down [NUM]			Decrease volume by 5% (or NUMBER if provided)."
+#			echo "	toggle				Toggle mute."
+#			echo ""
+#			echo "Options:"
+#			echo "	-h				Display this help message."
+#			exit 0
+#			;;
+#		\? )
+#			echo "Invalid Option: -$OPTARG" 1>&2
+#			exit 1
+#			;;
+#	esac
+#done
+
+comm=$1
+
+NUM=${2:-5}
+VOL=$( pactl list sinks | grep '^[[:space:]]Volume:' | head -n 1 | tail -n 1 | sed -e 's,.* \([0-9][0-9]*\)%.*,\1,' )
+
+toggle() { pulsemixer --toggle-mute ;}
+#up() { pulsemixer --change-volume +"$NUM" ;}
+#down() { pulsemixer --change-volume -"$NUM" ;}
+#setVol() { pulsemixer --set-volume $NUM ;}
+
+case "$comm" in
+	toggle) toggle;;
+	up) pactl set-sink-volume alsa_output.pci-0000_00_1f.3.analog-stereo $(( $(( $VOL +  $NUM )) * 655 )) ;;
+	down) pactl set-sink-volume alsa_output.pci-0000_00_1f.3.analog-stereo $(( $(( $VOL -  $NUM )) * 655 )) ;;
+	set) pactl set-sink-volume alsa_output.pci-0000_00_1f.3.analog-stereo $(( $NUM * 655 )) ;;
+esac >/dev/null
+
+#refbar
+#STATUS_MODULE="/home/victor/.config/dwmstatus/91_volume"
+#STATUS_MOD_CACHE="/home/victor/.cache/statusbar/91_volume"
+#STATUS_MOD_CACHE="/tmp/statusbar/91_volume"
+#bash $STATUS_MODULE > $STATUS_MOD_CACHE-tmp
+#mv $STATUS_MOD_CACHE-tmp $STATUS_MOD_CACHE
+/home/victor/.config/dwmstatus/.updaters/91_volume
